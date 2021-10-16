@@ -1,0 +1,10 @@
+### Apache Maven ###
+
+**/target
+
+### IntelliJ IDEA ###
+
+**/.idea
+*.iws
+*.iml
+*.ipr

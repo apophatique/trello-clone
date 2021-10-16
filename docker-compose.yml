@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:13-alpine
+    container_name: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trello_clone
+      POSTGRES_USER: trello_clone_user
+      POSTGRES_PASSWORD: trello_clone_user_password
+    ports:
+      - "5432:5432"

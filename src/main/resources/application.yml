@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/trello_clone
+    username: trello_clone_user
+    password: trello_clone_user_password
+  jpa:
+    open-in-view: false
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

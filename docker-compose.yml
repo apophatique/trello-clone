@@ -11,3 +11,20 @@ services:
       POSTGRES_PASSWORD: trello_clone_user_password
     ports:
       - "5432:5432"
+    networks:
+      - trello_clone_tier
+  server:
+    image: hu553in/trello-clone:latest
+    container_name: server
+    restart: unless-stopped
+    environment:
+      JAVA_TOOL_OPTIONS: -Dspring.profiles.active=docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - trello_clone_tier
+
+networks:
+  trello_clone_tier:

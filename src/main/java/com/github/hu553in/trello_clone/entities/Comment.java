@@ -10,6 +10,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -19,19 +21,24 @@ public class Comment {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @NotNull
     private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "card_id")
+    @NotNull
     private Card card;
 
     @Column(nullable = false)
+    @NotBlank
     private String text;
 
     @CreationTimestamp
+    @NotNull
     private Instant createdAt;
 
     @UpdateTimestamp
+    @NotNull
     private Instant updatedAt;
 
     protected Comment() {

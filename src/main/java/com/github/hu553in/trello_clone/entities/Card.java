@@ -10,8 +10,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -20,29 +24,40 @@ public class Card {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @NotNull
     private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "board_column_id")
+    @NotNull
     private BoardColumn boardColumn;
 
     @Column(nullable = false)
+    @NotBlank
     private String text;
 
     @Column(nullable = false)
+    @NotNull
     @Min(0)
     private Short position;
 
+    @OneToMany(mappedBy = "card")
+    @NotNull
+    private List<Comment> comments;
+
     @CreationTimestamp
+    @NotNull
     private Instant createdAt;
 
     @UpdateTimestamp
+    @NotNull
     private Instant updatedAt;
 
     protected Card() {
     }
 
-    public Card(final String text, final Short position) {
+    public Card(final BoardColumn boardColumn, final String text, final Short position) {
+        this.boardColumn = boardColumn;
         this.text = text;
         this.position = position;
     }
@@ -79,6 +94,14 @@ public class Card {
         this.position = position;
     }
 
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(final List<Comment> comments) {
+        this.comments = comments;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -102,6 +125,7 @@ public class Card {
                 ", boardColumn=" + boardColumn +
                 ", text='" + text + '\'' +
                 ", position=" + position +
+                ", comments=" + comments +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
@@ -112,16 +136,17 @@ public class Card {
         if (this == other) return true;
         if (other == null || getClass() != other.getClass()) return false;
         final Card otherCard = (Card) other;
-        return position == otherCard.position &&
-                Objects.equals(id, otherCard.id) &&
+        return Objects.equals(id, otherCard.id) &&
                 Objects.equals(boardColumn, otherCard.boardColumn) &&
                 Objects.equals(text, otherCard.text) &&
+                Objects.equals(position, otherCard.position) &&
+                Objects.equals(comments, otherCard.comments) &&
                 Objects.equals(createdAt, otherCard.createdAt) &&
                 Objects.equals(updatedAt, otherCard.updatedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, boardColumn, text, position, createdAt, updatedAt);
+        return Objects.hash(id, boardColumn, text, position, comments, createdAt, updatedAt);
     }
 }

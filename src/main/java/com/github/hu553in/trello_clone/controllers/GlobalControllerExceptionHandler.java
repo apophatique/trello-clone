@@ -23,9 +23,9 @@ public class GlobalControllerExceptionHandler {
         final Map<String, String> errors = new HashMap<>();
         e.getBindingResult()
                 .getAllErrors()
-                .forEach((error) -> errors.put(
-                        ((FieldError) error).getField(),
-                        error.getDefaultMessage()
+                .forEach(objectError -> errors.put(
+                        ((FieldError) objectError).getField(),
+                        objectError.getDefaultMessage()
                 ));
         return errors;
     }
@@ -33,17 +33,13 @@ public class GlobalControllerExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public Map<String, String> handleMethodArgumentTypeMismatch(final MethodArgumentTypeMismatchException e) {
-        return new HashMap<>() {{
-            put(e.getName(), "is of invalid data type");
-        }};
+        return Map.of(e.getName(), "is of invalid data type");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(CustomMethodArgumentNotValidException.class)
     public Map<String, String> handleCustomMethodArgumentNotValid(final CustomMethodArgumentNotValidException e) {
-        return new HashMap<>() {{
-            put(e.getField(), e.getMessage());
-        }};
+        return Map.of(e.getField(), e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

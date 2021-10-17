@@ -21,10 +21,11 @@ public class BoardColumnServiceImpl implements BoardColumnService {
     }
 
     @Override
-    public UUID create(final CreateBoardColumnForm createBoardColumnForm) throws CustomMethodArgumentNotValidException {
+    public UUID create(
+            final CreateBoardColumnForm createBoardColumnForm
+    ) throws CustomMethodArgumentNotValidException {
         var newPosition = createBoardColumnForm.getPosition();
-        var foundByPosition = boardColumnRepository.findByPosition(newPosition);
-        if (foundByPosition.isPresent()) {
+        if (boardColumnRepository.existsByPosition(newPosition)) {
             throw new CustomMethodArgumentNotValidException(
                     "position",
                     "should be unique"
@@ -37,10 +38,9 @@ public class BoardColumnServiceImpl implements BoardColumnService {
                     "should not exceed max position by more than 1"
             );
         }
-        return boardColumnRepository.save(new BoardColumn(
-                createBoardColumnForm.getTitle(),
-                createBoardColumnForm.getPosition()
-        )).getId();
+        return boardColumnRepository
+                .save(new BoardColumn(createBoardColumnForm.getTitle(), newPosition))
+                .getId();
     }
 
     @Override
@@ -58,13 +58,12 @@ public class BoardColumnServiceImpl implements BoardColumnService {
             final UUID id,
             final UpdateBoardColumnForm updateBoardColumnForm
     ) throws CustomMethodArgumentNotValidException {
-        var optionalBoardColumn = boardColumnRepository.findById(id);
-        if (optionalBoardColumn.isEmpty()) throw new EntityNotFoundException();
-        var boardColumn = optionalBoardColumn.get();
+        var boardColumn = boardColumnRepository
+                .findById(id)
+                .orElseThrow(EntityNotFoundException::new);
         var newPosition = updateBoardColumnForm.getPosition();
         if (newPosition != null) {
-            var foundByPosition = boardColumnRepository.findByPosition(newPosition);
-            if (foundByPosition.isPresent() && foundByPosition.get().getId() != id) {
+            if (boardColumnRepository.existsWithDifferentIdByPosition(id, newPosition)) {
                 throw new CustomMethodArgumentNotValidException(
                         "position",
                         "should be unique"
@@ -77,10 +76,10 @@ public class BoardColumnServiceImpl implements BoardColumnService {
                         "should not exceed max position by more than 1"
                 );
             }
-            boardColumn.setPosition(updateBoardColumnForm.getPosition());
+            boardColumn.setPosition(newPosition);
         }
         var newTitle = updateBoardColumnForm.getTitle();
-        if (newTitle != null) boardColumn.setTitle(updateBoardColumnForm.getTitle());
+        if (newTitle != null) boardColumn.setTitle(newTitle);
         boardColumnRepository.save(boardColumn);
     }
 

@@ -8,10 +8,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -31,6 +33,10 @@ public class BoardColumn {
     @NotNull
     @Min(0)
     private Short position;
+
+    @OneToMany(mappedBy = "boardColumn")
+    @NotNull
+    private List<Card> cards;
 
     @CreationTimestamp
     @NotNull
@@ -72,6 +78,14 @@ public class BoardColumn {
         this.position = position;
     }
 
+    public List<Card> getCards() {
+        return cards;
+    }
+
+    public void setCards(final List<Card> cards) {
+        this.cards = cards;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -94,25 +108,28 @@ public class BoardColumn {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", position=" + position +
+                ", cards=" + cards +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
     }
+
 
     @Override
     public boolean equals(final Object other) {
         if (this == other) return true;
         if (other == null || getClass() != other.getClass()) return false;
         final BoardColumn otherBoardColumn = (BoardColumn) other;
-        return position == otherBoardColumn.position &&
-                Objects.equals(id, otherBoardColumn.id) &&
+        return Objects.equals(id, otherBoardColumn.id) &&
                 Objects.equals(title, otherBoardColumn.title) &&
+                Objects.equals(position, otherBoardColumn.position) &&
+                Objects.equals(cards, otherBoardColumn.cards) &&
                 Objects.equals(createdAt, otherBoardColumn.createdAt) &&
                 Objects.equals(updatedAt, otherBoardColumn.updatedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, position, createdAt, updatedAt);
+        return Objects.hash(id, title, position, cards, createdAt, updatedAt);
     }
 }

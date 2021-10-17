@@ -7,13 +7,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class OpenApiCustomizer {
+public class OpenApiCustomizerConfiguration {
     @Bean
     public OpenApiCustomiser openApiCustomiser(final ObjectMapper objectMapper) {
         return openApi -> {
             var errorMapSchema = new ObjectSchema();
             errorMapSchema.name("ErrorMap");
-            errorMapSchema.example(objectMapper.createObjectNode().put("field name", "error message"));
+            errorMapSchema.example(
+                    objectMapper
+                            .createObjectNode()
+                            .put("title", "should not be blank")
+                            .put("position", "should be greater than or equal to 0")
+            );
             openApi.getComponents().getSchemas().put(errorMapSchema.getName(), errorMapSchema);
         };
     }

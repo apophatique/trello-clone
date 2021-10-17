@@ -10,9 +10,14 @@ import java.util.UUID;
 
 @Repository
 public interface BoardColumnRepository extends JpaRepository<BoardColumn, UUID> {
-    @Query("SELECT MAX(bc.position) FROM BoardColumn bc")
+    @Query("SELECT MAX(bc.position) " +
+            "FROM BoardColumn bc")
     Optional<Short> findMaxPosition();
 
-    @Query("SELECT bc FROM BoardColumn bc WHERE bc.position = ?1")
-    Optional<BoardColumn> findByPosition(final Short position);
+    boolean existsByPosition(final Short position);
+
+    @Query("SELECT CASE WHEN COUNT(bc) > 0 THEN TRUE ELSE FALSE END " +
+            "FROM BoardColumn bc " +
+            "WHERE bc.id <> ?1 AND bc.position = ?2")
+    boolean existsWithDifferentIdByPosition(final UUID id, final Short position);
 }

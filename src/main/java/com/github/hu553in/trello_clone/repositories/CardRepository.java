@@ -20,7 +20,7 @@ public interface CardRepository extends JpaRepository<Card, UUID> {
     @Query("SELECT MAX(c.position) " +
             "FROM Card c, BoardColumn bc " +
             "WHERE bc.id = ?1")
-    Optional<Short> findMaxPosition(final UUID boardColumnId);
+    Optional<Short> findMaxPositionByBoardColumnId(final UUID boardColumnId);
 
     boolean existsByBoardColumnIdAndPosition(final UUID boardColumnId, final Short position);
 

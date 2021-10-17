@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,7 +19,10 @@ public class CardServiceImpl implements CardService {
     private final BoardColumnRepository boardColumnRepository;
     private final CardRepository cardRepository;
 
-    public CardServiceImpl(final BoardColumnRepository boardColumnRepository, final CardRepository cardRepository) {
+    public CardServiceImpl(
+            final BoardColumnRepository boardColumnRepository,
+            final CardRepository cardRepository
+    ) {
         this.boardColumnRepository = boardColumnRepository;
         this.cardRepository = cardRepository;
     }
@@ -38,11 +42,18 @@ public class CardServiceImpl implements CardService {
                     "should be unique"
             );
         }
-        var maxPosition = cardRepository.findMaxPosition(boardColumnId);
-        if (maxPosition.isPresent() && newPosition - maxPosition.get() > 1) {
+        var maxPosition = cardRepository.findMaxPositionByBoardColumnId(boardColumnId);
+        if (maxPosition.isPresent()) {
+            if (newPosition - maxPosition.get() > 1) {
+                throw new CustomMethodArgumentNotValidException(
+                        "position",
+                        "should not exceed max position by more than 1"
+                );
+            }
+        } else if (newPosition > 0) {
             throw new CustomMethodArgumentNotValidException(
                     "position",
-                    "should not exceed max position by more than 1"
+                    "should be 0 if there are no elements"
             );
         }
         return cardRepository
@@ -57,7 +68,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public Optional<Card> read(final UUID boardColumnId, final UUID id) {
-        return cardRepository.findByIdAndBoardColumnId(boardColumnId, id);
+        return cardRepository.findByIdAndBoardColumnId(id, boardColumnId);
     }
 
     @Override
@@ -70,30 +81,40 @@ public class CardServiceImpl implements CardService {
         var card = cardRepository
                 .findById(id)
                 .orElseThrow(EntityNotFoundException::new);
+        var oldPosition = card.getPosition();
         var newPosition = updateCardForm.getPosition();
-        if (newPosition != null) {
+        if (newPosition != null && !newPosition.equals(oldPosition)) {
             if (cardRepository.existsWithDifferentIdByBoardColumnIdAndPosition(id, boardColumnId, newPosition)) {
                 throw new CustomMethodArgumentNotValidException(
                         "position",
                         "should be unique"
                 );
             }
-            var maxPosition = cardRepository.findMaxPosition(boardColumnId);
-            if (maxPosition.isPresent() && newPosition - maxPosition.get() > 1) {
-                throw new CustomMethodArgumentNotValidException(
-                        "position",
-                        "should not exceed max position by more than 1"
-                );
+            var optionalMaxPosition = cardRepository.findMaxPositionByBoardColumnId(boardColumnId);
+            if (optionalMaxPosition.isPresent()) {
+                var maxPosition = optionalMaxPosition.get();
+                if (newPosition - maxPosition > 0 && Objects.equals(oldPosition, maxPosition)) {
+                    throw new CustomMethodArgumentNotValidException(
+                            "position",
+                            "is trying to increase position of element with max position"
+                    );
+                }
+                if (newPosition - maxPosition > 1) {
+                    throw new CustomMethodArgumentNotValidException(
+                            "position",
+                            "should not exceed max position by more than 1"
+                    );
+                }
             }
             card.setPosition(newPosition);
         }
         var newText = updateCardForm.getText();
-        if (newText != null) card.setText(newText);
+        if (newText != null && !newText.equals(card.getText())) card.setText(newText);
         cardRepository.save(card);
     }
 
     @Override
     public void delete(final UUID boardColumnId, final UUID id) {
-        cardRepository.deleteByIdAndBoardColumnId(boardColumnId, id);
+        cardRepository.deleteByIdAndBoardColumnId(id, boardColumnId);
     }
 }

@@ -3,6 +3,7 @@ package com.github.hu553in.trello_clone.controllers;
 import com.github.hu553in.trello_clone.exceptions.CustomMethodArgumentNotValidException;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -40,6 +41,11 @@ public class GlobalControllerExceptionHandler {
     @ExceptionHandler(CustomMethodArgumentNotValidException.class)
     public Map<String, String> handleCustomMethodArgumentNotValid(final CustomMethodArgumentNotValidException e) {
         return Map.of(e.getField(), e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public void handleHttpMessageNotReadable() {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

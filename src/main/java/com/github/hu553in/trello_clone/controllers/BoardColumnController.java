@@ -38,7 +38,10 @@ public class BoardColumnController {
     private final BoardColumnService boardColumnService;
     private final ServletContext servletContext;
 
-    public BoardColumnController(final BoardColumnService boardColumnService, final ServletContext servletContext) {
+    public BoardColumnController(
+            final BoardColumnService boardColumnService,
+            final ServletContext servletContext
+    ) {
         this.boardColumnService = boardColumnService;
         this.servletContext = servletContext;
     }
@@ -58,11 +61,13 @@ public class BoardColumnController {
                     @ApiResponse(
                             responseCode = "201",
                             description = "Board column is created",
-                            headers = {@Header(
-                                    name = "Location",
-                                    description = "Board column URI",
-                                    required = true
-                            )},
+                            headers = {
+                                    @Header(
+                                            name = "Location",
+                                            description = "Board column URI",
+                                            required = true
+                                    )
+                            },
                             content = @Content
                     ),
                     @ApiResponse(
@@ -112,12 +117,14 @@ public class BoardColumnController {
     @GetMapping(value = "/{boardColumnId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             description = "Read board column",
-            parameters = {@Parameter(
-                    name = "boardColumnId",
-                    in = ParameterIn.PATH,
-                    description = "Board column ID",
-                    required = true
-            )},
+            parameters = {
+                    @Parameter(
+                            name = "boardColumnId",
+                            in = ParameterIn.PATH,
+                            description = "Board column ID",
+                            required = true
+                    )
+            },
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -149,12 +156,14 @@ public class BoardColumnController {
     @PutMapping(value = "/{boardColumnId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             description = "Update board column",
-            parameters = {@Parameter(
-                    name = "boardColumnId",
-                    in = ParameterIn.PATH,
-                    description = "Board column ID",
-                    required = true
-            )},
+            parameters = {
+                    @Parameter(
+                            name = "boardColumnId",
+                            in = ParameterIn.PATH,
+                            description = "Board column ID",
+                            required = true
+                    )
+            },
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Update board column form",
                     required = true,
@@ -188,12 +197,14 @@ public class BoardColumnController {
     @DeleteMapping("/{boardColumnId}")
     @Operation(
             description = "Delete board column",
-            parameters = {@Parameter(
-                    name = "boardColumnId",
-                    in = ParameterIn.PATH,
-                    description = "Board column ID",
-                    required = true
-            )},
+            parameters = {
+                    @Parameter(
+                            name = "boardColumnId",
+                            in = ParameterIn.PATH,
+                            description = "Board column ID",
+                            required = true
+                    )
+            },
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK", content = @Content),
                     @ApiResponse(

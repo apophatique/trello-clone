@@ -1,10 +1,9 @@
 package com.github.hu553in.trello_clone.controllers;
 
-import com.github.hu553in.trello_clone.entities.Card;
-import com.github.hu553in.trello_clone.exceptions.CustomMethodArgumentNotValidException;
-import com.github.hu553in.trello_clone.forms.card.CreateCardForm;
-import com.github.hu553in.trello_clone.forms.card.UpdateCardForm;
-import com.github.hu553in.trello_clone.services.card.CardService;
+import com.github.hu553in.trello_clone.entities.Comment;
+import com.github.hu553in.trello_clone.forms.comment.CreateCommentForm;
+import com.github.hu553in.trello_clone.forms.comment.UpdateCommentForm;
+import com.github.hu553in.trello_clone.services.comment.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -32,47 +31,53 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/board-columns/{boardColumnId}/cards")
-@Tag(name = "Cards")
-public class CardController {
-    private final CardService cardService;
+@RequestMapping("/board-columns/{boardColumnId}/cards/{cardId}/comments")
+@Tag(name = "Comments")
+public class CommentController {
+    private final CommentService commentService;
     private final ServletContext servletContext;
 
-    public CardController(
-            final CardService cardService,
+    public CommentController(
+            final CommentService commentService,
             final ServletContext servletContext
     ) {
-        this.cardService = cardService;
+        this.commentService = commentService;
         this.servletContext = servletContext;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
-            description = "Create card",
+            description = "Create comment",
             parameters = {
                     @Parameter(
                             name = "boardColumnId",
                             in = ParameterIn.PATH,
                             description = "Board column ID",
                             required = true
+                    ),
+                    @Parameter(
+                            name = "cardId",
+                            in = ParameterIn.PATH,
+                            description = "Card ID",
+                            required = true
                     )
             },
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Create card form",
+                    description = "Create comment form",
                     required = true,
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = CreateCardForm.class, required = true)
+                            schema = @Schema(implementation = CreateCommentForm.class, required = true)
                     )
             ),
             responses = {
                     @ApiResponse(
                             responseCode = "201",
-                            description = "Card is created",
+                            description = "Comment is created",
                             headers = {
                                     @Header(
                                             name = "Location",
-                                            description = "Card URI",
+                                            description = "Comment URI",
                                             required = true
                                     )
                             },
@@ -91,51 +96,24 @@ public class CardController {
     )
     public ResponseEntity<?> create(
             @PathVariable final UUID boardColumnId,
-            @Valid @RequestBody final CreateCardForm createCardForm
-    ) throws CustomMethodArgumentNotValidException {
+            @PathVariable final UUID cardId,
+            @Valid @RequestBody final CreateCommentForm createCommentForm
+    ) {
         return ResponseEntity.created(URI.create(
                 servletContext
                         .getContextPath()
                         .concat("/board-columns/")
                         .concat(boardColumnId.toString())
                         .concat("/cards/")
-                        .concat(cardService.create(boardColumnId, createCardForm).toString())
+                        .concat(cardId.toString())
+                        .concat("/comments/")
+                        .concat(commentService.create(boardColumnId, cardId, createCommentForm).toString())
         )).build();
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
-            description = "Read all cards",
-            parameters = {
-                    @Parameter(
-                            name = "boardColumnId",
-                            in = ParameterIn.PATH,
-                            description = "Board column ID",
-                            required = true
-                    )
-            },
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "OK",
-                            content = @Content(
-                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    array = @ArraySchema(
-                                            schema = @Schema(implementation = Card.class, required = true),
-                                            uniqueItems = true
-                                    )
-                            )
-                    ),
-                    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-            }
-    )
-    public ResponseEntity<List<Card>> readAll(@PathVariable final UUID boardColumnId) {
-        return ResponseEntity.ok(cardService.readAll(boardColumnId));
-    }
-
-    @GetMapping(value = "/{cardId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(
-            description = "Read card",
+            description = "Read all comments",
             parameters = {
                     @Parameter(
                             name = "boardColumnId",
@@ -156,7 +134,53 @@ public class CardController {
                             description = "OK",
                             content = @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = Card.class, required = true)
+                                    array = @ArraySchema(
+                                            schema = @Schema(implementation = Comment.class, required = true, requiredProperties = {
+                                                    "id",
+                                                    "createdAt",
+                                                    "updatedAt"
+                                            }),
+                                            uniqueItems = true
+                                    )
+                            )
+                    ),
+                    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
+            }
+    )
+    public ResponseEntity<List<Comment>> readAll(@PathVariable final UUID cardId) {
+        return ResponseEntity.ok(commentService.readAll(cardId));
+    }
+
+    @GetMapping(value = "/{commentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+            description = "Read comment",
+            parameters = {
+                    @Parameter(
+                            name = "boardColumnId",
+                            in = ParameterIn.PATH,
+                            description = "Board column ID",
+                            required = true
+                    ),
+                    @Parameter(
+                            name = "cardId",
+                            in = ParameterIn.PATH,
+                            description = "Card ID",
+                            required = true
+                    ),
+                    @Parameter(
+                            name = "commentId",
+                            in = ParameterIn.PATH,
+                            description = "Comment ID",
+                            required = true
+                    )
+            },
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "OK",
+                            content = @Content(
+                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = Comment.class, required = true)
                             )
                     ),
                     @ApiResponse(
@@ -171,19 +195,19 @@ public class CardController {
                     @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
             }
     )
-    public ResponseEntity<Card> read(
-            @PathVariable final UUID boardColumnId,
-            @PathVariable("cardId") final UUID id
+    public ResponseEntity<Comment> read(
+            @PathVariable final UUID cardId,
+            @PathVariable("commentId") final UUID id
     ) {
-        return cardService
-                .read(boardColumnId, id)
+        return commentService
+                .read(cardId, id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping(value = "/{cardId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{commentId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
-            description = "Update card",
+            description = "Update comment",
             parameters = {
                     @Parameter(
                             name = "boardColumnId",
@@ -196,14 +220,20 @@ public class CardController {
                             in = ParameterIn.PATH,
                             description = "Card ID",
                             required = true
+                    ),
+                    @Parameter(
+                            name = "commentId",
+                            in = ParameterIn.PATH,
+                            description = "Comment Id",
+                            required = true
                     )
             },
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Update card form",
+                    description = "Update comment form",
                     required = true,
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = UpdateCardForm.class, required = true)
+                            schema = @Schema(implementation = UpdateCommentForm.class, required = true)
                     )
             ),
             responses = {
@@ -222,16 +252,17 @@ public class CardController {
     )
     public ResponseEntity<?> update(
             @PathVariable final UUID boardColumnId,
-            @PathVariable("cardId") final UUID id,
-            @Valid @RequestBody final UpdateCardForm updateCardForm
-    ) throws CustomMethodArgumentNotValidException {
-        cardService.update(boardColumnId, id, updateCardForm);
+            @PathVariable final UUID cardId,
+            @PathVariable("commentId") final UUID id,
+            @Valid @RequestBody final UpdateCommentForm updateCommentForm
+    ) {
+        commentService.update(boardColumnId, cardId, id, updateCommentForm);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{cardId}")
+    @DeleteMapping("/{commentId}")
     @Operation(
-            description = "Delete card",
+            description = "Delete comment",
             parameters = {
                     @Parameter(
                             name = "boardColumnId",
@@ -243,6 +274,12 @@ public class CardController {
                             name = "cardId",
                             in = ParameterIn.PATH,
                             description = "Card ID",
+                            required = true
+                    ),
+                    @Parameter(
+                            name = "commentId",
+                            in = ParameterIn.PATH,
+                            description = "Comment ID",
                             required = true
                     )
             },
@@ -261,10 +298,10 @@ public class CardController {
             }
     )
     public ResponseEntity<?> delete(
-            @PathVariable final UUID boardColumnId,
-            @PathVariable("cardId") final UUID id
+            @PathVariable final UUID cardId,
+            @PathVariable("commentId") final UUID id
     ) {
-        cardService.delete(boardColumnId, id);
+        commentService.delete(cardId, id);
         return ResponseEntity.ok().build();
     }
 }

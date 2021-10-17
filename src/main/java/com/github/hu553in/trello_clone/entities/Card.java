@@ -1,7 +1,10 @@
 package com.github.hu553in.trello_clone.entities;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.Column;
@@ -10,12 +13,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -24,12 +26,13 @@ public class Card {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @NotNull
+    @Schema(required = true)
     private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "board_column_id")
-    @NotNull
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @Schema(required = true)
     private BoardColumn boardColumn;
 
     @Column(nullable = false)
@@ -39,18 +42,15 @@ public class Card {
     @Column(nullable = false)
     @NotNull
     @Min(0)
+    @Max(32767)
     private Short position;
 
-    @OneToMany(mappedBy = "card")
-    @NotNull
-    private List<Comment> comments;
-
     @CreationTimestamp
-    @NotNull
+    @Schema(required = true)
     private Instant createdAt;
 
     @UpdateTimestamp
-    @NotNull
+    @Schema(required = true)
     private Instant updatedAt;
 
     protected Card() {
@@ -94,14 +94,6 @@ public class Card {
         this.position = position;
     }
 
-    public List<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(final List<Comment> comments) {
-        this.comments = comments;
-    }
-
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -125,7 +117,6 @@ public class Card {
                 ", boardColumn=" + boardColumn +
                 ", text='" + text + '\'' +
                 ", position=" + position +
-                ", comments=" + comments +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
@@ -140,13 +131,12 @@ public class Card {
                 Objects.equals(boardColumn, otherCard.boardColumn) &&
                 Objects.equals(text, otherCard.text) &&
                 Objects.equals(position, otherCard.position) &&
-                Objects.equals(comments, otherCard.comments) &&
                 Objects.equals(createdAt, otherCard.createdAt) &&
                 Objects.equals(updatedAt, otherCard.updatedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, boardColumn, text, position, comments, createdAt, updatedAt);
+        return Objects.hash(id, boardColumn, text, position, createdAt, updatedAt);
     }
 }

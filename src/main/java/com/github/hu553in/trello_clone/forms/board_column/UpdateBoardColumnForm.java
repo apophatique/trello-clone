@@ -1,5 +1,8 @@
 package com.github.hu553in.trello_clone.forms.board_column;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.Objects;
 
@@ -7,8 +10,10 @@ public class UpdateBoardColumnForm {
     private String title;
 
     @Min(value = 0, message = "should be greater than or equal to 0")
+    @Max(value = 32767, message = "should be less than or equal to 32767")
     private Short position;
 
+    @JsonCreator
     public UpdateBoardColumnForm(final String title, final Short position) {
         this.title = title;
         this.position = position;

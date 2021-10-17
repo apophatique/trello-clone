@@ -1,5 +1,8 @@
 package com.github.hu553in.trello_clone.forms.card;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.util.Objects;
 
@@ -7,8 +10,10 @@ public class UpdateCardForm {
     private String text;
 
     @Min(value = 0, message = "should be greater than or equal to 0")
+    @Max(value = 32767, message = "should be less than or equal to 32767")
     private Short position;
 
+    @JsonCreator
     public UpdateCardForm(final String text, final Short position) {
         this.text = text;
         this.position = position;

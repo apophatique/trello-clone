@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,10 +33,17 @@ public class BoardColumnServiceImpl implements BoardColumnService {
             );
         }
         var maxPosition = boardColumnRepository.findMaxPosition();
-        if (maxPosition.isPresent() && newPosition - maxPosition.get() > 1) {
+        if (maxPosition.isPresent()) {
+            if (newPosition - maxPosition.get() > 1) {
+                throw new CustomMethodArgumentNotValidException(
+                        "position",
+                        "should not exceed max position by more than 1"
+                );
+            }
+        } else if (newPosition > 0) {
             throw new CustomMethodArgumentNotValidException(
                     "position",
-                    "should not exceed max position by more than 1"
+                    "should be 0 if there are no elements"
             );
         }
         return boardColumnRepository
@@ -61,25 +69,35 @@ public class BoardColumnServiceImpl implements BoardColumnService {
         var boardColumn = boardColumnRepository
                 .findById(id)
                 .orElseThrow(EntityNotFoundException::new);
+        var oldPosition = boardColumn.getPosition();
         var newPosition = updateBoardColumnForm.getPosition();
-        if (newPosition != null) {
+        if (newPosition != null && !newPosition.equals(oldPosition)) {
             if (boardColumnRepository.existsWithDifferentIdByPosition(id, newPosition)) {
                 throw new CustomMethodArgumentNotValidException(
                         "position",
                         "should be unique"
                 );
             }
-            var maxPosition = boardColumnRepository.findMaxPosition();
-            if (maxPosition.isPresent() && newPosition - maxPosition.get() > 1) {
-                throw new CustomMethodArgumentNotValidException(
-                        "position",
-                        "should not exceed max position by more than 1"
-                );
+            var optionalMaxPosition = boardColumnRepository.findMaxPosition();
+            if (optionalMaxPosition.isPresent()) {
+                var maxPosition = optionalMaxPosition.get();
+                if (newPosition - maxPosition > 0 && Objects.equals(oldPosition, maxPosition)) {
+                    throw new CustomMethodArgumentNotValidException(
+                            "position",
+                            "is trying to increase position of element with max position"
+                    );
+                }
+                if (newPosition - maxPosition > 1) {
+                    throw new CustomMethodArgumentNotValidException(
+                            "position",
+                            "should not exceed max position by more than 1"
+                    );
+                }
             }
             boardColumn.setPosition(newPosition);
         }
         var newTitle = updateBoardColumnForm.getTitle();
-        if (newTitle != null) boardColumn.setTitle(newTitle);
+        if (newTitle != null && !newTitle.equals(boardColumn.getTitle())) boardColumn.setTitle(newTitle);
         boardColumnRepository.save(boardColumn);
     }
 

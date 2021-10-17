@@ -1,7 +1,10 @@
 package com.github.hu553in.trello_clone.entities;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.Column;
@@ -11,7 +14,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -21,12 +23,13 @@ public class Comment {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @NotNull
+    @Schema(required = true)
     private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "card_id")
-    @NotNull
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @Schema(required = true)
     private Card card;
 
     @Column(nullable = false)
@@ -34,17 +37,18 @@ public class Comment {
     private String text;
 
     @CreationTimestamp
-    @NotNull
+    @Schema(required = true)
     private Instant createdAt;
 
     @UpdateTimestamp
-    @NotNull
+    @Schema(required = true)
     private Instant updatedAt;
 
     protected Comment() {
     }
 
-    public Comment(final String text) {
+    public Comment(final Card card, final String text) {
+        this.card = card;
         this.text = text;
     }
 

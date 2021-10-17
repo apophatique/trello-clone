@@ -1,5 +1,6 @@
 package com.github.hu553in.trello_clone.entities;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -8,12 +9,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -22,7 +22,7 @@ public class BoardColumn {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @NotNull
+    @Schema(required = true)
     private UUID id;
 
     @Column(nullable = false)
@@ -32,18 +32,15 @@ public class BoardColumn {
     @Column(nullable = false)
     @NotNull
     @Min(0)
+    @Max(32767)
     private Short position;
 
-    @OneToMany(mappedBy = "boardColumn")
-    @NotNull
-    private List<Card> cards;
-
     @CreationTimestamp
-    @NotNull
+    @Schema(required = true)
     private Instant createdAt;
 
     @UpdateTimestamp
-    @NotNull
+    @Schema(required = true)
     private Instant updatedAt;
 
     protected BoardColumn() {
@@ -78,14 +75,6 @@ public class BoardColumn {
         this.position = position;
     }
 
-    public List<Card> getCards() {
-        return cards;
-    }
-
-    public void setCards(final List<Card> cards) {
-        this.cards = cards;
-    }
-
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -108,7 +97,6 @@ public class BoardColumn {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", position=" + position +
-                ", cards=" + cards +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
@@ -123,13 +111,12 @@ public class BoardColumn {
         return Objects.equals(id, otherBoardColumn.id) &&
                 Objects.equals(title, otherBoardColumn.title) &&
                 Objects.equals(position, otherBoardColumn.position) &&
-                Objects.equals(cards, otherBoardColumn.cards) &&
                 Objects.equals(createdAt, otherBoardColumn.createdAt) &&
                 Objects.equals(updatedAt, otherBoardColumn.updatedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, position, cards, createdAt, updatedAt);
+        return Objects.hash(id, title, position, createdAt, updatedAt);
     }
 }
